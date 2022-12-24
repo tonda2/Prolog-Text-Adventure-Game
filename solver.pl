@@ -19,4 +19,11 @@ properSize(Sudoku, Goal) :-
 	length(FirstRow, Goal),
 	allSameLength(Sudoku).
 
-solve(Sudoku, Size) :- properSize(Sudoku, Size).
+inInterval(List) :-
+	member(X, List),
+	between(1,1,X).
+
+solve(Sudoku, Size):-
+	properSize(Sudoku, Size),
+	member(Row, Sudoku),
+	inInterval(Row).
