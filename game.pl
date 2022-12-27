@@ -1,10 +1,15 @@
 :- dynamic location/1.
+:- dynamic item/2.
+:- dynamic has/1.
+:- dynamic status/1.
+:- dynamic result/1.
 
 % --- Game setup ---
 
 location('Výtah').
 status('alive').
-start :- introduction.
+result(0).
+start :- introduction, showinfo.
 
 introduction :-
     ansi_format([bold,fg(red)], 'Jak už se to občas stává, výtah si dělá co chce a namísto do přízemí tě právě dovezl do 14. patra.', []), nl,
@@ -19,29 +24,45 @@ room('Výtah').
 room('Respirium').
 room('Schodiště').
 room('Učitelská kuchyňka').
+room('Malá učebna').
+room('Velká učebna').
+room('Kabinet').
+room('Testovací místnost').
 
-info('Výtah', '').
+info('Výtah', 'Jsi u výtahu. Tlačítka jsou rozbitá, takže budeš muset pěšky.').
 info('Respirium', 'Obvykle je respirium plné sténajících studentů, dnes je tu ale úplně prázdno. Je zde spousta židlí, takže se můžeš posadit a v klidu zamyslet, co dál. Doporuřuji nakouknout i pod stoly, často tam bývají roztroušené různé zapomenuté věci.').
+info('Malá učebna', 'Jsi v malé učebně, která v tobě vyvolává mnoho nepříjemných vzpomínek. Najednou jsi rád, že tě ze školy vyhodili. Místnost je temná a když se ti konečně podaří nahmatat vypínač, zjistíš, že v ní nejsi sám. V rohu se krčí temná postava bušící něco do notebooku. Možná si budete mít co říct.').
+info('Kabinet', 'Už na první pohled je ti jasné, že tady nemáš co dělat. Místnost je špatně osvícená, plná tabulí s výpočty a plakáty se vzorečky a v rohu se kupí hrnky od čaje. Evidentně tu sídlí matematici a jednoho dokonce vidíš stát v rohu. Pokud se cítíš odvážně, možná si s tebou bude i povídat.').
 
 door('Výtah', 'Respirium').
-
-item('Zapomenutá skripta', 'Respirium').
-item('Sladká sušenka', 'Respirium').
+/*Jen pro test, ODSTRANIT */ door('Výtah', 'Kabinet').
+door('Respirium', 'Testovací místnost').
+door('Respirium', 'Malá učebna').
+door('Testovací místnost', 'Malá učebna').
+door('Malá učebna', 'Kabinet').
+door('Kabinet', 'Učitelská kuchyňka').
 
 connected(X, Y) :- door(X, Y).
 connected(X, Y) :- door(Y, X).
 
+item('Skripta', 'Respirium').
+item('Sušenka', 'Respirium').
+
+person('Malá učebna', 'student').
+person('Kabinet', 'učitel').
+
+% --- Useful functions ---
+
 kdejsem :-
     location(Location),
-    write('Jsi v místnosti s názvem '), write(Location), write('.'), nl.
+    write('Jsi v místnosti s názvem '), write(Location), write('.'), nl, showinfo.
 
 showitems(Room) :-
-    ansi_format([bold], 'Předměty v místnosti:', []), nl, 
-    item(Item, Room),
-    write(Item), nl.
+    item(Item, Room), 
+    write(Item), nl, fail.
+showitems(_) :- true.
 
 showconnections(Room) :-
-    ansi_format([bold], 'Místnosti, do nichž se odsud dostaneš:', []), nl, 
     connected(Dest, Room),
     write(Dest), nl, fail.
 
@@ -51,8 +72,16 @@ showinfo :-
     ansi_format([bold], 'Nacházíš se v místnosti ', []), 
     ansi_format([bold], Location, []), nl,
     ansi_format([bold,fg(blue)], Info, []), nl,
+    ansi_format([bold], 'Předměty v místnosti:', []), nl,
     showitems(Location),
+    ansi_format([bold], 'Místnosti, do nichž se odsud dostaneš:', []), nl, 
     showconnections(Location).
+
+% --- Moving ---
+
+canEnter(_) :-
+    status('counting'), !,
+    write('Nejdřív dokonči svůj příklad!'), fail.
 
 canEnter(Room) :-
     location(Location),
@@ -62,7 +91,7 @@ canEnter(Room) :-
     location(Room),
     write('V místnosti '),
     write(Room),
-    write(' právě jsi!'), !.
+    write(' právě jsi!'), fail.
 
 canEnter(Room) :-
     room(Room),
@@ -78,3 +107,61 @@ vstup(Room) :-
     retract(location(Location)),
     asserta(location(Room)),
     showinfo.
+
+% --- Interacting ---
+
+equal(X, X).
+
+getResult(N1, N2, 1) :- !, write(N1), write(' + '), write(N2), write(' = ??'), Res is N1 + N2, retract(result(_)), asserta(result(Res)).
+getResult(N1, N2, 2) :- !, write(N1), write(' - '), write(N2), write(' = ??'), Res is N1 - N2, retract(result(_)), asserta(result(Res)).
+getResult(N1, N2, 3) :- !, write(N1), write(' * '), write(N2), write(' = ??'), Res is N1 * N2, retract(result(_)), asserta(result(Res)).
+getResult(N1, N2, 4) :- !, write(N1), write(' / '), write(N2), write(' = ??'), Res is N1 / N2, retract(result(_)), asserta(result(Res)).
+
+getProblem :-
+    random(1, 100, N1),
+    random(1, 100, N2),
+    random(1, 4, S),
+    getResult(N1, N2, S).
+
+odpovedet(Got) :-
+    result(Wanted),
+    equal(Wanted, Got), !,
+    write('Gratuluji. Zkoušku jsi ustál a jsi propuštěn.'),
+    retract(status('counting')),
+    asserta(status('alive')).
+
+odpovedet(_) :-
+    write('To bohužel není správně. Za pohoršení všech znalých matematiky budeš měsíc mít nádobí v místní kuchyňce').
+
+vzit(Item) :-
+    location(Room),
+    item(Item, Room), !,
+    retract(item(Item, Room)),
+    asserta(has(Item)).
+
+vzit(_) :-
+    write('Tento předmět tu není!').
+
+mluvitTyp('student') :-
+    not(has('Skripta')), !,
+    asserta(has('Skripta')),
+    write('Student má radost, že na něj poprvé za celý den někdo promluvil. Jako poděkování ti věnuje svoje skripta z analýzy a přeje ti hodně štěstí.').
+
+mluvitTyp('student') :-
+    write('Student na tebe bázlivě vzhlédl od obrazovky a dál se věnuje své práci. Tato interakce nikam nepovede.').
+
+mluvitTyp('učitel') :- !,
+    retract(status('alive')),
+    asserta(status('counting')),
+    write('Narazil si na jednoho z všemi obávaných učitelů matematiky. Na úprk už ale není čas, budeš s ním muset hovořit.'), nl,
+    write('Než se stačíš rozkoukat, už ti podává fixu a ty nemáš na výběr. Jinak, než počítáním, se odsud živý nedostaneš.'), nl,
+    write('Máš za úkol spočítat '),
+    getProblem(), 
+    write('.').
+
+mluvit :-
+    location(Room), !,
+    person(Room, Typ),
+    mluvitTyp(Typ).
+
+mluvit :- write('V této místnosti není s kým mluvit!').
