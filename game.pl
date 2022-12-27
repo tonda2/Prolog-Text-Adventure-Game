@@ -9,6 +9,7 @@
 location('Výtah').
 status('alive').
 result(0).
+:- ansi_format([bold,fg(red)], 'Pro spuštění hry "start.". Pro nápovědu "help."', []).
 start :- introduction, showinfo.
 
 introduction :-
@@ -17,6 +18,15 @@ introduction :-
     ansi_format([bold,fg(red)], 'Skupině studentů, která odsud před chvílí s brekem prchala, se totiž podařilo poničit ovládací desku k výtahu.', []), nl, 
     ansi_format([bold,fg(red)], 'Tvá jediná možnost, jak se dostat zpět na zem, jsou proto schody. Ty jsou ale, jak s hrůzou zjišťuješ, za zamčenými dveřmi.', []), nl, 
     ansi_format([bold,fg(red)], 'Z hezkého večera se stává noční můra. Vydáváš se na obhlídku patra a doufáš, že najdeš někoho, kdo ti dveře odemkne.', []), nl.
+
+help :-
+    ansi_format([bold,fg(green)], 'Ovládání', []), nl,
+    ansi_format([bold], 'vstup(Místnost) = vstup do dané místnosti', []), nl,
+    ansi_format([bold], 'vzit(Předmět) = sebrání daného předmětu', []), nl,
+    ansi_format([bold], 'mluvit = promluvit s člověkem v místnosti, kde se hráč právě nachází', []), nl,
+    ansi_format([bold], 'odpovedet(Výsledek) = odpovědět na problém', []), nl,
+    ansi_format([bold], 'veci = zobrazení všech věcí, které má hráč u sebe', []), nl,
+    ansi_format([bold], 'kdejsem = zobrazení informací o místnosti, kde se hráč právě nachází', []), nl.
 
 % --- Room definitions ---
 
@@ -33,14 +43,22 @@ info('Výtah', 'Jsi u výtahu. Tlačítka jsou rozbitá, takže budeš muset pě
 info('Respirium', 'Obvykle je respirium plné sténajících studentů, dnes je tu ale úplně prázdno. Je zde spousta židlí, takže se můžeš posadit a v klidu zamyslet, co dál. Doporuřuji nakouknout i pod stoly, často tam bývají roztroušené různé zapomenuté věci.').
 info('Malá učebna', 'Jsi v malé učebně, která v tobě vyvolává mnoho nepříjemných vzpomínek. Najednou jsi rád, že tě ze školy vyhodili. Místnost je temná a když se ti konečně podaří nahmatat vypínač, zjistíš, že v ní nejsi sám. V rohu se krčí temná postava bušící něco do notebooku. Možná si budete mít co říct.').
 info('Kabinet', 'Už na první pohled je ti jasné, že tady nemáš co dělat. Místnost je špatně osvícená, plná tabulí s výpočty a plakáty se vzorečky a v rohu se kupí hrnky od čaje. Evidentně tu sídlí matematici a jednoho dokonce vidíš stát v rohu. Pokud se cítíš odvážně, možná si s tebou bude i povídat.').
+info('Velká učebna', '').
+info('Toalety', '').
+info('Společenská místnost', '').
+info('Síťová laboratoř', '').
+info('Testovací místnost', '').
+info('Kuchyňka', '').
+info('Schodiště', '').
 
 door('Výtah', 'Respirium').
-/*Jen pro test, ODSTRANIT */ door('Výtah', 'Kabinet').
 door('Respirium', 'Testovací místnost').
 door('Respirium', 'Malá učebna').
 door('Testovací místnost', 'Malá učebna').
 door('Malá učebna', 'Kabinet').
 door('Kabinet', 'Učitelská kuchyňka').
+
+locked('Schodiště').
 
 connected(X, Y) :- door(X, Y).
 connected(X, Y) :- door(Y, X).
@@ -53,9 +71,7 @@ person('Kabinet', 'učitel').
 
 % --- Useful functions ---
 
-kdejsem :-
-    location(Location),
-    write('Jsi v místnosti s názvem '), write(Location), write('.'), nl, showinfo.
+kdejsem :- showinfo.
 
 showitems(Room) :-
     item(Item, Room), 
@@ -65,6 +81,12 @@ showitems(_) :- true.
 showconnections(Room) :-
     connected(Dest, Room),
     write(Dest), nl, fail.
+
+showinventory :-
+    has(Item), write(Item), nl, fail.
+
+veci :-
+    write('Hráč má u sebe:'), nl, showinventory.
 
 showinfo :-
     location(Location),
@@ -82,6 +104,8 @@ showinfo :-
 canEnter(_) :-
     status('counting'), !,
     write('Nejdřív dokonči svůj příklad!'), fail.
+
+canEnter(Room) :- locked(Room), !, fail.
 
 canEnter(Room) :-
     location(Location),
@@ -159,9 +183,9 @@ mluvitTyp('učitel') :- !,
     getProblem(), 
     write('.').
 
+mluvit :- location(Room), not(person(Room, _)), !, write('V této místnosti není s kým mluvit!').
+
 mluvit :-
     location(Room), !,
     person(Room, Typ),
     mluvitTyp(Typ).
-
-mluvit :- write('V této místnosti není s kým mluvit!').
