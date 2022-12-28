@@ -5,6 +5,9 @@
 :- dynamic result/1.
 :- dynamic locked/1.
 :- dynamic visited/1.
+:- dynamic room/1.
+:- dynamic door/2.
+:- dynamic info/2.
 
 % --- Game setup ---
 
@@ -13,7 +16,7 @@ status('alive').
 visited('Výtah').
 result(0).
 :- ansi_format([bold,fg(red)], 'Pro spuštění hry "start.". Pro nápovědu "help."', []).
-start :- placeTeleport, introduction, showinfo.
+start :- runTests, placeTeleport, introduction, showinfo.
 
 introduction :-
     ansi_format([bold,fg(red)], 'Jak už se to občas stává, výtah si dělá co chce a namísto do přízemí tě právě dovezl do 14. patra.', []), nl,
@@ -86,11 +89,12 @@ item('Flaška', 'Toalety').
 item('Sušenka', 'Testovací místnost').
 item('Počítač', 'Síťová laboratoř').
 
-placeTeleport :-
+placeTeleport :- % Room to place teleport in is randomly chosen at the beginning when start is called.
     !, findall(Room, room(Room), AllRooms), length(AllRooms, Count), Max is Count - 1,
     random(0, Max, Ran), nth0(Ran, AllRooms, RandomRoom),
     asserta(item('Teleport', RandomRoom)).
 
+%person(ROOM, TYPE)
 person('Malá učebna', 'student').
 person('Kabinet', 'učitel').
 person('Kuchyňka', 'student').
@@ -176,7 +180,7 @@ canteleport :-
     has('Teleport'), !.
 
 canteleport :-
-    not(has('Teleport')), write('Nemáš teleport!'), fail.
+    not(has('Teleport')), write('Nemáš teleport!'), !, fail.
 
 teleport(Room) :-
     canteleport,
@@ -191,7 +195,7 @@ teleport(_) :-
     canteleport, !,
     write('Taková místnost buď neexistuje nebo jsi ji zatim nenavštívil.'), nl.
 
-% --- Interacting ---
+% --- Math problems ---
 
 equal(X, X).
 
@@ -229,6 +233,8 @@ odpovedet(_) :-
     write('To bohužel není správně. Byl jsi odsouzen k doživotnímu vaření kafe místním matematikům.'), nl,
     retract(status('counting')), asserta(status('dead')), halt.
 
+% --- Handling items ---
+
 vzit('Teleport') :-
     location(Room),
     item('Teleport', Room), !,
@@ -243,7 +249,7 @@ vzit(Item) :-
     asserta(has(Item)).
 
 vzit(_) :-
-    write('Tento předmět tu není!').
+    write('Tento předmět tu není!'), fail.
 
 nechat(Item) :-
     has(Item), !,
@@ -252,7 +258,9 @@ nechat(Item) :-
     asserta(item(Item, Room)).
 
 nechat(_) :-
-    write('Takový předmět u sebe nemáš!').
+    write('Takový předmět u sebe nemáš!'), fail.
+
+% --- Talking ---
 
 mluvitTyp('student') :-
     not(has('Skripta')), !,
@@ -311,9 +319,40 @@ mluvitTyp('síťař') :-
     write('Jako poděkování ti nabídne, že ho můžeš požádat naprosto o cokoliv. Samozřejmě si řekneš o klíče ke schodišti a je ti to dopřáno. Gratuluji, můžeš odejít!'),
     retract(locked('Schodiště')).
 
-mluvit :- location(Room), not(person(Room, _)), !, write('V této místnosti není s kým mluvit!').
+mluvit :- location(Room), not(person(Room, _)), !, write('V této místnosti není s kým mluvit!'), fail.
 
 mluvit :-
     location(Room), !,
     person(Room, Typ),
     mluvitTyp(Typ).
+
+% --- Tests ---
+
+lockedRoomTest :-
+    % create temporary new rooms to run tests on
+    location(OriginalLocation),
+    asserta(room('temp room')),
+    asserta(room('temp locked room')),
+    asserta(locked('temp locked room')),
+    asserta(door('temp room', 'temp locked room')),
+    retract(location(OriginalLocation)),
+    asserta(location('temp room')),
+    
+    not(canEnter('temp locked room')), % should be false, room is locked
+    not(vstup('temp locked room')), % should be false, room is locked
+    not(vzit('nonexisting item')), % should be false, can't take nonexistent item
+    not(nechat('item you do not have')), % should be false, can't drop nonexistent item
+    not(teleport('temp locked room')), % should be false, don't have a teleport
+    not(mluvit), % should be false, noone to talk to here
+
+    % remove temporary rooms
+    retract(room('temp room')),
+    retract(room('temp locked room')),
+    retract(locked('temp locked room')),
+    retract(door('temp room', 'temp locked room')),
+    retract(location('temp room')),
+    asserta(location(OriginalLocation)), !,
+    nl, nl, write('Locked room test success!'), nl, nl.
+
+runTests :-
+    lockedRoomTest.
