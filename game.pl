@@ -85,6 +85,7 @@ item('Kafe', 'Kuchyňka').
 item('Flaška', 'Toalety').
 item('Sušenka', 'Testovací místnost').
 item('Počítač', 'Síťová laboratoř').
+item('Teleport', 'Společenská místnost').
 
 person('Malá učebna', 'student').
 person('Kabinet', 'učitel').
@@ -178,6 +179,7 @@ teleport(Room) :-
     visited(Room), !,
     location(Location),
     retract(location(Location)),
+    retract(has('Teleport')),
     asserta(location(Room)),
     showinfo.
 
@@ -222,6 +224,13 @@ odpovedet(_) :-
 odpovedet(_) :-
     write('To bohužel není správně. Byl jsi odsouzen k doživotnímu vaření kafe místním matematikům.'), nl,
     retract(status('counting')), asserta(status('dead')), halt.
+
+vzit('Teleport') .-
+    location(Room),
+    item('Teleport', Room), !,
+    retract(item('Teleport', Room)),
+    asserta(has('Teleport')),
+    write('Gratuluji, nalezl jsi teleport. Díky tomuto magickému zařízení se můžeš okamžitě přemístit do kterékoliv místnosti, kterou jsi již navštívil. Ale pozor, můžeš tak učinit pouze jednou!'), nl.
 
 vzit(Item) :-
     location(Room),
