@@ -13,7 +13,7 @@ status('alive').
 visited('Výtah').
 result(0).
 :- ansi_format([bold,fg(red)], 'Pro spuštění hry "start.". Pro nápovědu "help."', []).
-start :- introduction, showinfo.
+start :- placeTeleport, introduction, showinfo.
 
 introduction :-
     ansi_format([bold,fg(red)], 'Jak už se to občas stává, výtah si dělá co chce a namísto do přízemí tě právě dovezl do 14. patra.', []), nl,
@@ -85,7 +85,11 @@ item('Kafe', 'Kuchyňka').
 item('Flaška', 'Toalety').
 item('Sušenka', 'Testovací místnost').
 item('Počítač', 'Síťová laboratoř').
-item('Teleport', 'Společenská místnost').
+
+placeTeleport :-
+    !, findall(Room, room(Room), AllRooms), length(AllRooms, Count), Max is Count - 1,
+    random(0, Max, Ran), nth0(Ran, AllRooms, RandomRoom),
+    asserta(item('Teleport', RandomRoom)).
 
 person('Malá učebna', 'student').
 person('Kabinet', 'učitel').
@@ -225,7 +229,7 @@ odpovedet(_) :-
     write('To bohužel není správně. Byl jsi odsouzen k doživotnímu vaření kafe místním matematikům.'), nl,
     retract(status('counting')), asserta(status('dead')), halt.
 
-vzit('Teleport') .-
+vzit('Teleport') :-
     location(Room),
     item('Teleport', Room), !,
     retract(item('Teleport', Room)),
