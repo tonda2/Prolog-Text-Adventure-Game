@@ -57,6 +57,7 @@ info('Kuchyňka', 'Jsi v malé místnůstce, která působí jako stroze vybaven
 info('Schodiště', 'Snaha se vyplatila a konečně jsi se dostal přes zamčené dveře. Teď rychle pryč, než budeš muset zase něco počítat.').
 
 door('Výtah', 'Respirium').
+door('Výtah', 'Schodiště').
 door('Respirium', 'Malá učebna').
 door('Respirium', 'Velká učebna').
 door('Respirium', 'Testovací místnost').
@@ -145,6 +146,10 @@ canEnter(Room) :-
 
 canEnter(_) :-
     write('Taková místnost tu není!'), fail.
+
+vstup('Schodiště') :-
+    not(locked('Schodiště')), !, 
+    write('Gratuluji k dokončení hry!'), nl, halt.
 
 vstup(Room) :-
     canEnter(Room),
@@ -243,8 +248,8 @@ mluvitTyp('alkoholik') :-
 mluvitTyp('alkoholik') :-
     retract(has('Flaška')),
     write('Skupinka má radost z flašky, kterou jsi jim přinesl, a už kolují panáky.'), nl,
-    write('Když po chvíli dojde řeč na tvůj problém, poradí ti jeden z tvých nových kamarádů, ať zajdeš do síťové laboratoře. Tam ti prý poradí.'), nl,
-    write('Ať už v té flašce bylo cokoliv, všem to chutnalo. Na poděkovanou jsi dostal jakýsi kabel.'), nl,
+    write('Když po chvíli dojde řeč na tvůj problém, nikdo ti neumí poradit.'), nl,
+    write('Ať už v tvé flašce ale bylo cokoliv, všem to chutnalo. Na poděkovanou jsi dostal jakýsi kabel.'), nl,
     asserta(has('Kabel')).
 
 mluvitTyp('zkoušející') :-
@@ -252,6 +257,19 @@ mluvitTyp('zkoušející') :-
     asserta(status('counting')),
     write('Ať se snažíš sebevíc, zkoušející si nechce nechat vysvětlit, že jsi nepřišel psát žádný test. Zdá se, že budeš muset něco spočítat. Snad se pak uklidní.'), nl,
     write('Rychle se chopíš fixy a jdeš na to. Zadání je '), getProblem, write('.').
+
+mluvitTyp('síťař') :-
+    not(has('Kabel')), !,
+    write('Ukázalo se, že jsi narazil na místního síťaře. Do serveru se dostala myš a překousala některé kabely a server teď nefunguje.'), nl,
+    write('Správcí bohužel došly další kabely, takže nemůž server uvést zpátky do provozu. Pokud mu nějaký kabel přineseš, prý se ti bohatě odmění.'), nl.
+
+mluvitTyp('síťař') :-
+    retract(has('Kabel')), 
+    write('Ukázalo se, že jsi narazil na místního síťaře. Do serveru se dostala myš a překousala některé kabely a server teď nefunguje.'), nl,
+    write('Tebe mu ale seslalo samo nebe - stále u sebe máš totiž kabel, který jsi dostal výměnou za flašku od slavící skupinky.'), nl,
+    write('Kabel mu samozřejmě nabídneš a server je hned navrácen do provozu. Správce je ti nadmíru vděčný, díky tobě nepřijde o práci.'), nl,
+    write('Jako poděkování ti nabídne, že ho můžeš požádat naprosto o cokoliv. Samozřejmě si řekneš o klíče ke schodišti a je ti to dopřáno. Gratuluji, můžeš odejít!'),
+    retract(locked('Schodiště')).
 
 mluvit :- location(Room), not(person(Room, _)), !, write('V této místnosti není s kým mluvit!').
 
