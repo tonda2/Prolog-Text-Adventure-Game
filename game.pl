@@ -4,11 +4,13 @@
 :- dynamic status/1.
 :- dynamic result/1.
 :- dynamic locked/1.
+:- dynamic visited/1.
 
 % --- Game setup ---
 
 location('Výtah').
 status('alive').
+visited('Výtah').
 result(0).
 :- ansi_format([bold,fg(red)], 'Pro spuštění hry "start.". Pro nápovědu "help."', []).
 start :- introduction, showinfo.
@@ -124,6 +126,12 @@ showinfo :-
 
 % --- Moving ---
 
+addToVisited(Room) :-
+    visited(Room), !.
+
+addToVisited(Room) :-
+    asserta(visited(Room)).
+
 canEnter(_) :-
     status('counting'), !,
     write('Nejdřív dokonči svůj příklad!'), fail.
@@ -154,9 +162,28 @@ vstup('Schodiště') :-
 vstup(Room) :-
     canEnter(Room),
     location(Location), !,
+    addToVisited(Room),
     retract(location(Location)),
     asserta(location(Room)),
     showinfo.
+
+canteleport :-
+    has('Teleport'), !.
+
+canteleport :-
+    not(has('Teleport')), write('Nemáš teleport!'), fail.
+
+teleport(Room) :-
+    canteleport,
+    visited(Room), !,
+    location(Location),
+    retract(location(Location)),
+    asserta(location(Room)),
+    showinfo.
+
+teleport(_) :-
+    canteleport, !,
+    write('Taková místnost buď neexistuje nebo jsi ji zatim nenavštívil.'), nl.
 
 % --- Interacting ---
 
