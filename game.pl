@@ -27,13 +27,14 @@ introduction :-
 
 help :-
     ansi_format([bold,fg(green)], 'Ovládání', []), nl,
-    ansi_format([bold], 'vstup(Místnost) = vstup do dané místnosti', []), nl,
-    ansi_format([bold], 'vzit(Předmět) = sebrání daného předmětu', []), nl,
-    ansi_format([bold], 'nechat(Předmět) = zanechání daného předmětu v místnosti, kde se hráč právě nachází', []), nl,
-    ansi_format([bold], 'mluvit = promluvit s člověkem v místnosti, kde se hráč právě nachází', []), nl,
-    ansi_format([bold], 'odpovedet(Výsledek) = odpovědět na problém', []), nl,
-    ansi_format([bold], 'veci = zobrazení všech věcí, které má hráč u sebe', []), nl,
-    ansi_format([bold], 'kdejsem = zobrazení informací o místnosti, kde se hráč právě nachází', []), nl.
+    ansi_format([bold], 'kdejsem             = zobrazení informací o místnosti, kde se hráč právě nachází', []), nl,
+    ansi_format([bold], 'veci                = zobrazení všech věcí, které má hráč u sebe', []), nl,
+    ansi_format([bold], 'vstup(Místnost)     = vstup do dané místnosti', []), nl,
+    ansi_format([bold], 'teleport(Místnost)  = přenesení do dané místnosti, pokud má hráč u sebe teleport', []), nl,
+    ansi_format([bold], 'vzit(Předmět)       = sebrání daného předmětu', []), nl,
+    ansi_format([bold], 'nechat(Předmět)     = zanechání daného předmětu v místnosti, kde se hráč právě nachází', []), nl,
+    ansi_format([bold], 'mluvit              = promluvit s člověkem v místnosti, kde se hráč právě nachází', []), nl,
+    ansi_format([bold], 'odpovedet(Výsledek) = odpovědět na problém', []), nl.
 
 % --- Room definitions ---
 
