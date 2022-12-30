@@ -23,3 +23,10 @@ Hra se spustí příkazem start. Příkazem help lze zobrazit stejnou nápovědu
 - nechat(Předmět)     = zanechání daného předmětu v místnosti, kde se hráč právě nachází
 - mluvit              = promluvit s člověkem v místnosti, kde se hráč právě nachází
 - odpovedet(Výsledek) = odpovědět na problém
+
+### Příklad ovládání:
+- start.
+- vstup('Respirium').
+- vzit('Sušenka').
+- vstup('Malá učebna').
+- mluvit.
