@@ -12,7 +12,7 @@ V Prologu implementujte textovou adventuru, která podporuje inventář postavy,
 
 ## Ovládání
 
-Hra se spustí příkazem start. Příkazem help lze zobrazit stejnou nápovědu, jako je zde.
+Hra se spustí příkazem start. Příkazem help lze zobrazit stejnou nápovědu, jako je zde. Příkaz test spustí všechny testy.
 
 ### Podporované operace: 
 - kdejsem             = zobrazení informací o místnosti, kde se hráč právě nachází

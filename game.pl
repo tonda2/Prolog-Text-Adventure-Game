@@ -231,8 +231,7 @@ odpovedet(_) :-
     asserta(status('alive')).
 
 odpovedet(_) :-
-    write('To bohužel není správně. Byl jsi odsouzen k doživotnímu vaření kafe místním matematikům.'), nl,
-    retract(status('counting')), asserta(status('dead')), halt.
+    write('To bohužel není správně. Byl jsi odsouzen k doživotnímu vaření kafe místním matematikům.'), nl, halt.
 
 % --- Handling items ---
 
@@ -329,6 +328,11 @@ mluvit :-
 
 % --- Tests ---
 
+teleportPlacedTest :-
+    placeTeleport,
+    item('Teleport', Room),
+    retract(item('Teleport', Room)).
+
 lockedRoomTest :-
     % create temporary new rooms to run tests on
     location(OriginalLocation),
@@ -352,8 +356,10 @@ lockedRoomTest :-
     retract(locked('temp locked room')),
     retract(door('temp room', 'temp locked room')),
     retract(location('temp room')),
-    asserta(location(OriginalLocation)), !,
-    nl, nl, write('Locked room test success!'), nl, nl.
+    asserta(location(OriginalLocation)).
 
-runTests :-
-    lockedRoomTest.
+test :-
+    lockedRoomTest,
+    nl, nl, write('Test #1 successful!'), nl, nl,
+    teleportPlacedTest,
+    write('Test #2 successful!'), nl, nl.
