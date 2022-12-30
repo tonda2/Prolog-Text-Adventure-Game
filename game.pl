@@ -16,7 +16,7 @@ status('alive').
 visited('Výtah').
 result(0).
 :- ansi_format([bold,fg(red)], 'Pro spuštění hry "start.". Pro nápovědu "help."', []).
-start :- runTests, placeTeleport, introduction, showinfo.
+start :- placeTeleport, introduction, showinfo.
 
 introduction :-
     ansi_format([bold,fg(red)], 'Jak už se to občas stává, výtah si dělá co chce a namísto do přízemí tě právě dovezl do 14. patra.', []), nl,
@@ -57,7 +57,7 @@ info('Kabinet', 'Už na první pohled je ti jasné, že tady nemáš co dělat. 
 info('Velká učebna', 'Dostal jsi se do další z učeben. Zdá se, že tu kromě jedné poblikávající zářivky nefunguje žádné světlo. Místní věc vyřešili rozestavením několika svíček po obvodu místnosti a jejich plameny hází na stěny děsivé stíny. Necítíš se tu ani trochu příjemně a proto tě překvapuje, že tu někdo sedí.').
 info('Toalety', 'Záchody jako každé jiné. Trochu divná je jenom ta sprcha - k čemu tady je? Dobře víš, že programátoři takové věci nepotřebují. Na umyvadle také stojí skleněná lahev s neznámou tekutinou.').
 info('Společenská místnost', 'Světlo, žádná hudba a hlouček lidí sedících u stolu nad notebookem - zdá se, že jsi dorazil na programátorskou party. To taky znamená, že by si s tebou možná mohl někdo z nich i povídat.').
-info('Síťová laboratoř', 'Jsi ve velké místnosti plné hučících počítačů, díky kterým je tu narozdíl od zbytku patra krásně teplo. Dochází ti, že toto je ta místnost, kde sídlí všechny důležité servery téhle školy. To by byla ale smůla, kdyby někdo přišel a nešťastnou náhodou vyhodil pojistky. Naštěstí je v místnosti někdo, kdo zřejmě ví, co dělá, když jde o počítače, jelikož se právě v jednom z velkých serverů hrabe.').
+info('Síťová laboratoř', 'Jsi ve velké místnosti plné hučících počítačů, díky kterým je tu narozdíl od zbytku patra krásně teplo. Dochází ti, že toto je ta místnost, kde sídlí všechny důležité servery téhle školy. To by byla ale smůla, kdyby někdo přišel a nešťastnou náhodou vyhodil pojistky. Naštěstí je v místnosti někdo, kdo zřejmě ví, co dělá, jelikož se právě v jednom z velkých serverů hrabe.').
 info('Testovací místnost', 'A kruci. Dostal jsi se do místnosti, kde se zrovna píše test. Učitel si tě zatím nevšiml, takže máš šanci na úprk. Také s nim ale můžeš zkusit mluvit, přeci jen vypadá, že by mohl vědět kudy kam.').
 info('Kuchyňka', 'Jsi v malé místnůstce, která působí jako stroze vybavená kuchyňka. V rohu u kávovaru se krčí drobná postava a něco si pro sebe mručí.').
 info('Schodiště', 'Snaha se vyplatila a konečně jsi se dostal přes zamčené dveře. Teď rychle pryč, než budeš muset zase něco počítat.').
@@ -121,14 +121,14 @@ showinventory :-
     has(Item), write(Item), nl, fail.
 
 veci :-
-    write('Hráč má u sebe:'), nl, showinventory.
+    ansi_format([bold], 'Hráč má u sebe:', []), nl, showinventory.
 
 showinfo :-
     location(Location),
     info(Location, Info),
     ansi_format([bold], 'Nacházíš se v místnosti ', []), 
     ansi_format([bold], Location, []), nl,
-    ansi_format([bold,fg(blue)], Info, []), nl,
+    write(Info), nl,
     ansi_format([bold], 'Předměty v místnosti:', []), nl,
     showitems(Location),
     ansi_format([bold], 'Místnosti, do nichž se odsud dostaneš:', []), nl, 
@@ -274,7 +274,7 @@ mluvitTyp('student') :-
 mluvitTyp('učitel') :- !,
     retract(status('alive')),
     asserta(status('counting')),
-    write('Narazil si na jednoho z všemi obávaných učitelů matematiky. Na úprk už ale není čas, budeš s ním muset hovořit.'), nl,
+    write('Narazil jsi na jednoho ze všemi obávaných učitelů matematiky. Na úprk už ale není čas, budeš s ním muset hovořit.'), nl,
     write('Než se stačíš rozkoukat, už ti podává fixu a ty nemáš na výběr. Jinak, než počítáním, se odsud živý nedostaneš.'), nl,
     write('Máš za úkol spočítat '),
     getProblem, 
@@ -310,13 +310,13 @@ mluvitTyp('zkoušející') :-
 mluvitTyp('síťař') :-
     not(has('Kabel')), !,
     write('Ukázalo se, že jsi narazil na místního síťaře. Do serveru se dostala myš a překousala některé kabely a server teď nefunguje.'), nl,
-    write('Správcí bohužel došly další kabely, takže nemůž server uvést zpátky do provozu. Pokud mu nějaký kabel přineseš, prý se ti bohatě odmění.'), nl.
+    write('Správcí bohužel došly další kabely, takže nemůže server uvést zpátky do provozu. Pokud mu nějaký kabel přineseš, prý se ti bohatě odmění.'), nl.
 
 mluvitTyp('síťař') :-
     retract(has('Kabel')), 
     write('Ukázalo se, že jsi narazil na místního síťaře. Do serveru se dostala myš a překousala některé kabely a server teď nefunguje.'), nl,
-    write('Tebe mu ale seslalo samo nebe - stále u sebe máš totiž kabel, který jsi dostal výměnou za flašku od slavící skupinky.'), nl,
-    write('Kabel mu samozřejmě nabídneš a server je hned navrácen do provozu. Správce je ti nadmíru vděčný, díky tobě nepřijde o práci.'), nl,
+    write('Tebe mu ale seslalo samo nebe - stále u sebe totiž máš kabel, který jsi dostal výměnou za flašku.'), nl,
+    write('Samozřejmě mu ho nabídneš a server je hned navrácen do provozu. Správce je ti nadmíru vděčný, díky tobě nepřijde o práci.'), nl,
     write('Jako poděkování ti nabídne, že ho můžeš požádat naprosto o cokoliv. Samozřejmě si řekneš o klíče ke schodišti a je ti to dopřáno. Gratuluji, můžeš odejít!'),
     retract(locked('Schodiště')).
 
